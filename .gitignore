@@ -1,0 +1,45 @@
+# ---- Secrets & env ----
+# 只推送 *.env.example，真实 .env / .env.* 一律不进仓库
+.env
+.env.*
+!.env.example
+!**/.env.example
+
+# ---- Node / frontend ----
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# ---- Python / backend ----
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# ---- Logs ----
+logs/
+*.log
+
+# ---- Deploy artifacts ----
+comm-agent-deploy-fixed.tar.gz
+
+# ---- Tool runtime state ----
+.superpowers/
+*.pid
+
+# ---- OS / editor ----
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

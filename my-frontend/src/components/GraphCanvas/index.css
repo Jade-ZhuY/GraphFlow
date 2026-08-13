@@ -1,0 +1,138 @@
+.graph-canvas {
+  width: 100%;
+  height: 100%;
+  background: var(--color-bg-deep);
+  cursor: grab;
+  overflow: hidden;
+  position: relative;
+}
+
+.graph-canvas:active {
+  cursor: grabbing;
+}
+
+.graph-canvas.mode-add-node {
+  cursor: crosshair;
+}
+
+.graph-canvas.mode-add-edge {
+  cursor: crosshair;
+}
+
+.graph-canvas.mode-delete {
+  cursor: not-allowed;
+}
+
+/* Node styles */
+.node-group {
+  transition: filter 0.2s ease;
+}
+
+.node-group:hover .node-shape,
+.node-group:hover .node-circle {
+  filter: drop-shadow(0 4px 8px rgba(44, 36, 27, 0.16));
+}
+
+.node-circle,
+.node-shape {
+  transition: all 0.2s ease;
+}
+
+.node-group.selected .node-circle,
+.node-group.selected .node-shape {
+  stroke: var(--color-accent-amber);
+  stroke-width: 3;
+  filter: drop-shadow(0 0 8px rgba(232, 168, 56, 0.6));
+}
+
+.node-group.selected .node-label {
+  fill: var(--color-accent-terracotta);
+  font-weight: 700;
+}
+
+.node-label {
+  pointer-events: none;
+  user-select: none;
+}
+
+.node-circle {
+  fill: #f4fbf1;
+  stroke: #1b7a32;
+  stroke-width: 1.8;
+}
+
+.node-title {
+  fill: #12642a;
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.property-line {
+  fill: #2c3d2c;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  pointer-events: none;
+  user-select: none;
+}
+
+.type-label {
+  fill: #315fb8;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Edge styles */
+.edge-line {
+  transition: stroke 0.2s ease, stroke-width 0.2s ease;
+  stroke: #1f2d24;
+  marker-end: url("#graph-edge-arrow");
+}
+
+.edge-group:hover .edge-line {
+  stroke: var(--color-accent-terracotta);
+  stroke-width: 2.5;
+  marker-end: url("#graph-edge-arrow-hover");
+}
+
+.edge-group.selected .edge-line {
+  stroke: var(--color-accent-amber);
+  stroke-width: 2.5;
+  marker-end: url("#graph-edge-arrow-selected");
+}
+
+.edge-arrow-head-default {
+  fill: #b0a394;
+  opacity: 0.9;
+}
+
+.edge-arrow-head-hover {
+  fill: var(--color-accent-terracotta);
+}
+
+.edge-arrow-head-selected {
+  fill: var(--color-accent-amber);
+}
+
+.edge-label {
+  pointer-events: none;
+  user-select: none;
+  font-weight: 700;
+  fill: #12642a;
+}
+
+.edge-label-bg {
+  fill: #f4fbf1;
+  stroke: rgba(27, 122, 50, 0.34);
+  stroke-width: 1;
+}
+
+/* Connecting line */
+.connecting-line {
+  stroke: var(--color-accent-terracotta);
+  stroke-width: 2;
+  stroke-dasharray: 5, 5;
+  pointer-events: none;
+}

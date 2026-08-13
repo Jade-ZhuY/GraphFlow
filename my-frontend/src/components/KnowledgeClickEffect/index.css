@@ -1,0 +1,78 @@
+.knowledge-click-effect-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  overflow: hidden;
+  contain: layout paint;
+}
+
+.knowledge-click-effect-particle {
+  position: absolute;
+  left: var(--click-x);
+  top: var(--click-y);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 160px;
+  padding: 2px 8px;
+  border: 1px solid currentColor;
+  border-radius: 6px;
+  background: rgba(253, 251, 247, 0.82);
+  box-shadow: 0 6px 18px rgba(44, 36, 27, 0.14);
+  font-family: var(--font-body);
+  font-size: var(--particle-size);
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1.2;
+  white-space: nowrap;
+  text-shadow: 0 1px 0 rgba(253, 251, 247, 0.75);
+  transform: translate(-50%, -50%);
+  animation: knowledge-click-float
+    var(--knowledge-click-duration, 1400ms)
+    cubic-bezier(0.18, 0.72, 0.2, 1) var(--float-delay) forwards;
+  will-change: transform, opacity;
+}
+
+.knowledge-click-effect-particle.tone-terracotta {
+  color: var(--color-accent-terracotta);
+}
+
+.knowledge-click-effect-particle.tone-amber {
+  color: var(--color-accent-amber);
+}
+
+.knowledge-click-effect-particle.tone-sage {
+  color: var(--color-accent-sage);
+}
+
+.knowledge-click-effect-particle.tone-crimson {
+  color: var(--color-accent-crimson);
+}
+
+@keyframes knowledge-click-float {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) translateY(8px) scale(0.9) rotate(0deg);
+  }
+
+  16% {
+    opacity: 1;
+    transform: translate(-50%, -50%) translateY(0) scale(1) rotate(0deg);
+  }
+
+  100% {
+    opacity: 0;
+    transform:
+      translate(-50%, -50%)
+      translate(var(--float-x), var(--float-y))
+      scale(1.08)
+      rotate(var(--float-rotate));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .knowledge-click-effect-layer {
+    display: none;
+  }
+}

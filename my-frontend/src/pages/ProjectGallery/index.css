@@ -1,0 +1,123 @@
+.project-gallery {
+  width: 100%;
+  min-height: 100%;
+  background: var(--color-bg-deep);
+  padding: 40px 60px;
+  box-sizing: border-box;
+}
+
+.gallery-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.gallery-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.gallery-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.gallery-home-btn {
+  color: var(--color-text-secondary) !important;
+  margin-right: 4px;
+}
+
+.gallery-home-btn:hover {
+  color: var(--color-accent-terracotta) !important;
+  background: var(--color-bg-hover) !important;
+}
+
+.brand-icon {
+  color: var(--color-accent-terracotta);
+}
+
+.brand-title {
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+.gallery-rag-btn {
+  background: var(--color-bg-panel) !important;
+  border-color: var(--color-border) !important;
+  color: var(--color-text-primary) !important;
+  font-family: var(--font-body);
+  font-weight: 600;
+}
+
+.gallery-rag-btn:hover {
+  border-color: var(--color-accent-terracotta) !important;
+  color: var(--color-accent-terracotta) !important;
+  background: #fff !important;
+}
+
+.create-btn {
+  background: var(--color-accent-terracotta) !important;
+  border-color: var(--color-accent-terracotta) !important;
+  font-family: var(--font-body);
+  font-weight: 600;
+}
+
+.create-btn:hover {
+  background: var(--color-accent-burnt) !important;
+  border-color: var(--color-accent-burnt) !important;
+}
+
+.gallery-content {
+  max-width: 1200px;
+}
+
+.gallery-empty {
+  padding: 80px 0;
+}
+
+.empty-desc p {
+  font-size: 16px;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.empty-hint {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  margin-top: 8px;
+}
+
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.gallery-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.gallery-section-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.project-role-tag {
+  margin-left: auto;
+}

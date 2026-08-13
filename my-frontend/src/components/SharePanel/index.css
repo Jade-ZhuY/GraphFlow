@@ -1,0 +1,62 @@
+.share-owner-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--color-bg-deep);
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.share-owner-icon {
+  color: var(--color-accent-amber);
+}
+
+.share-owner-label {
+  font-size: 13px;
+  color: var(--color-text-primary);
+  flex: 1;
+}
+
+.share-add-form {
+  margin-bottom: 8px;
+}
+
+.share-add-form .ant-form-item {
+  margin-bottom: 12px;
+}
+
+.share-members-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin: 8px 0 4px;
+}
+
+.share-member-item {
+  padding: 10px 4px !important;
+}
+
+.share-member-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.share-member-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.share-member-email {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.share-member-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}

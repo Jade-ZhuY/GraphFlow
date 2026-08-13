@@ -1,0 +1,70 @@
+.project-card {
+  background: var(--color-bg-panel);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  transition: all 0.25s ease;
+}
+
+.project-card:hover {
+  box-shadow: 0 4px 16px rgba(44, 36, 27, 0.08);
+  border-color: var(--color-accent-terracotta);
+}
+
+.project-card .ant-card-body {
+  padding: 20px;
+}
+
+.project-card .ant-card-actions {
+  background: transparent;
+  border-top: 1px solid var(--color-border);
+}
+
+.project-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.project-icon {
+  color: var(--color-accent-terracotta);
+}
+
+.project-name {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.project-desc {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  margin: 0 0 12px 0;
+  line-height: 1.5;
+}
+
+.project-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.project-tag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.project-stats {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  font-family: var(--font-mono);
+}
+
+.project-date {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  opacity: 0.7;
+}

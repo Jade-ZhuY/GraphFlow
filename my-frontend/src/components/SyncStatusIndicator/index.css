@@ -1,0 +1,57 @@
+.sync-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 14px;
+  border: 1px solid transparent;
+  line-height: 1;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.sync-indicator-saved {
+  color: var(--color-accent-sage);
+  background: color-mix(in srgb, var(--color-accent-sage) 12%, transparent);
+  border-color: color-mix(in srgb, var(--color-accent-sage) 30%, transparent);
+}
+
+.sync-indicator-syncing {
+  color: var(--color-accent-amber);
+  background: color-mix(in srgb, var(--color-accent-amber) 12%, transparent);
+  border-color: color-mix(in srgb, var(--color-accent-amber) 30%, transparent);
+}
+
+.sync-indicator-unsaved {
+  color: var(--color-accent-burnt);
+  background: color-mix(in srgb, var(--color-accent-burnt) 10%, transparent);
+  border-color: color-mix(in srgb, var(--color-accent-burnt) 25%, transparent);
+}
+
+.sync-indicator-error {
+  color: var(--color-accent-crimson);
+  background: color-mix(in srgb, var(--color-accent-crimson) 12%, transparent);
+  border-color: color-mix(in srgb, var(--color-accent-crimson) 30%, transparent);
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s ease;
+}
+
+.sync-indicator-error:hover {
+  background: color-mix(in srgb, var(--color-accent-crimson) 20%, transparent);
+}
+
+.sync-spin {
+  animation: sync-spin 0.8s linear infinite;
+}
+
+@keyframes sync-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
