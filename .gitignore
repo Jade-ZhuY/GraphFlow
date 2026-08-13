@@ -43,3 +43,22 @@ Thumbs.db
 *.njsproj
 *.sln
 *.sw?
+
+# ---- Internal docs (not for public repo) ----
+CLAUDE.md
+docs/
+业务需求卡模板.md
+backend/README.md
+backend/BACKEND_AUTH_API_CONTRACT.md
+backend/图谱设计后端接入.md
+backend/项目管理和图谱设计.md
+my-frontend/README.md
+my-frontend/DEVELOPMENT_FLOW_V2.md
+my-frontend/GRAPH_RAG_DESIGN.md
+my-frontend/AUTH_INTEGRATION_CHANGE_SUMMARY.md
+my-frontend/rdf-pg-visual-change-summary.md
+my-frontend/前端技术栈说明.md
+my-frontend/前端项目管理和图谱设计.md
+my-frontend/开发流程文档.md
+my-frontend/知识图谱点击特效实现说明.md
+my-frontend/plans/
