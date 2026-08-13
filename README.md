@@ -1,4 +1,4 @@
-# Comm Agent
+# Graph Flow
 
 知识图谱设计与咨询助手。基于 FastAPI 与 React 的全栈知识工程工作台：可视化设计图谱、导入导出 RDF / 属性图（PG）数据，并内置 LLM 咨询助手与 GraphRAG 检索问答。
 
@@ -21,8 +21,6 @@
 | --- | --- |
 | `backend/` | FastAPI 服务：认证、图谱项目 CRUD、LLM 助手、GraphRAG 检索 |
 | `my-frontend/` | React 19 SPA：图谱编辑器、咨询助手、GraphRAG 页面 |
-| `docs/需求卡/` | 各功能的需求卡（先行文档，开发入口） |
-| `CLAUDE.md` | 面向 AI 开发助手的架构说明与约定 |
 
 ## 技术栈
 
@@ -71,19 +69,6 @@ pnpm lint
 pnpm test
 pnpm build
 ```
-
-## 文档
-
-- **API 契约**：[`backend/BACKEND_AUTH_API_CONTRACT.md`](backend/BACKEND_AUTH_API_CONTRACT.md)
-- **后端设计**：[`backend/图谱设计后端接入.md`](backend/图谱设计后端接入.md) · [`backend/项目管理和图谱设计.md`](backend/项目管理和图谱设计.md)
-- **前端设计**：[`my-frontend/开发流程文档.md`](my-frontend/开发流程文档.md) · [`my-frontend/DEVELOPMENT_FLOW_V2.md`](my-frontend/DEVELOPMENT_FLOW_V2.md) · [`my-frontend/GRAPH_RAG_DESIGN.md`](my-frontend/GRAPH_RAG_DESIGN.md) · [`my-frontend/前端技术栈说明.md`](my-frontend/前端技术栈说明.md)
-- **需求卡**：`docs/需求卡/`（知识图谱设计、导入导出标准格式、LLM 智能体、编辑态一致性、协作与权限）
-
-## 配置与安全
-
-- `.env` 一律不入库：本地复制对应 `.env.example` 后填写，勿提交真实密钥
-- 数据库默认 MySQL（`mysql+pymysql://root:1234@localhost:3306/comm_agent`），可用 `DATABASE_URL` 覆盖
-- 后端 `JWT_SECRET_KEY` 与 LLM API Key 仅存于后端 `.env`
 
 ## License
 
