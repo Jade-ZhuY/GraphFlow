@@ -87,4 +87,4 @@ pnpm build
 
 ## License
 
-本仓库目前未指定开源许可证。如需开源发布，请先选择（如 MIT / Apache-2.0）并添加 `LICENSE` 文件。
+本项目采用 [Apache License 2.0](LICENSE)。
