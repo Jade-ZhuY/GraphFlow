@@ -3,6 +3,7 @@ import { getAuthAccessToken } from '@/services/authSession';
 import type {
   BackendMessage,
   Conversation,
+  GraphDraft,
 } from '@/types/assistant';
 
 const API_BASE_URL =
@@ -48,10 +49,13 @@ export interface ChatStreamHandlers {
   onChunk: (content: string) => void;
   onDone: () => void;
   onError: (message: string) => void;
+  /** build_graph 意图产出的图谱草稿（graph_draft 事件）。 */
+  onGraphDraft?: (draft: GraphDraft) => void;
 }
 
 /**
- * 发送消息并消费 SSE 流。每个 content chunk 触发 onChunk，结束触发 onDone，出错触发 onError。
+ * 发送消息并消费 SSE 流。每个 content chunk 触发 onChunk，结束触发 onDone，
+ * 出错触发 onError，收到图谱草稿触发 onGraphDraft。
  */
 export async function chatStream(
   conversationId: string,
@@ -131,11 +135,14 @@ export async function chatStream(
             type?: string;
             content?: string;
             message?: string;
+            draft?: GraphDraft;
           };
           if (payload.type === 'chunk' && payload.content) {
             handlers.onChunk(payload.content);
           } else if (payload.type === 'error') {
             handlers.onError(payload.message || '生成失败');
+          } else if (payload.type === 'graph_draft' && payload.draft) {
+            handlers.onGraphDraft?.(payload.draft);
           }
         } catch {
           // 忽略无法解析的帧

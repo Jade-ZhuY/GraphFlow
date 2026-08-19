@@ -112,6 +112,8 @@ def _mock_agent(monkeypatch: pytest.MonkeyPatch) -> None:
 
     monkeypatch.setattr(service_module, "_create_llm", lambda **_: FakeLLM())
     monkeypatch.setattr(service_module, "create_agent", lambda **_: FakeAgent())
+    # mock 语义路由：默认无命中，走 create_agent 分支（避免测试打真实 embedding API）
+    monkeypatch.setattr(service_module, "classify_intent", lambda _q: None)
 
 
 def create_conversation(client: TestClient, token: str) -> dict:
@@ -244,3 +246,119 @@ def test_chat_requires_owned_conversation(client: TestClient) -> None:
     )
     assert response.status_code == 403
     assert response.json()["code"] == 40301
+
+
+# ---- build_graph 意图：图谱草稿生成 ----
+
+
+def _mock_build_graph_draft() -> Any:
+    from app.services.graph_draft_service import DraftEdge, DraftNode, GraphDraft
+
+    return GraphDraft(
+        title="客户关系",
+        nodes=[
+            DraftNode(id="n1", label="张三"),
+            DraftNode(id="n2", label="星辰科技"),
+        ],
+        edges=[DraftEdge(id="e1", source="n1", target="n2", label="任职于")],
+    )
+
+
+BUILD_GRAPH_MATERIAL = (
+    "张三任职于星辰科技，负责产品研发。李四是工程师，和张三是同事。"
+)
+
+
+def test_chat_build_graph_emits_graph_draft(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import app.services.assistant_service as service_module
+
+    monkeypatch.setattr(service_module, "classify_intent", lambda _q: "build_graph")
+    monkeypatch.setattr(
+        service_module, "extract_graph_draft", lambda _text: _mock_build_graph_draft()
+    )
+
+    token = register_user(client)
+    conv = create_conversation(client, token)
+
+    with client.stream(
+        "POST",
+        "/api/assistant/chat",
+        headers=auth_headers(token),
+        json={"conversationId": conv["id"], "content": BUILD_GRAPH_MATERIAL},
+    ) as response:
+        assert response.status_code == 200
+        body = b"".join(response.iter_bytes()).decode("utf-8")
+
+    # 文字说明 chunk（逐字打散，需拼接） + graph_draft 帧 + [DONE]
+    assert "已为你解析出图谱草稿" in "".join(_extract_sse_chunks(body))
+    assert '"type": "graph_draft"' in body
+    assert '"title": "客户关系"' in body
+    assert "data: [DONE]" in body
+
+    # 消息落库（user + assistant 两条）
+    messages = client.get(
+        f"/api/assistant/conversations/{conv['id']}/messages",
+        headers=auth_headers(token),
+    ).json()["data"]
+    assert len(messages) == 2
+    assert "图谱草稿" in messages[1]["content"]
+
+
+def test_chat_build_graph_guides_when_no_material(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import app.services.assistant_service as service_module
+
+    # 短指令句 → 直接引导，不应触发提取
+    monkeypatch.setattr(service_module, "classify_intent", lambda _q: "build_graph")
+    extract_spy: list[str] = []
+    monkeypatch.setattr(
+        service_module,
+        "extract_graph_draft",
+        lambda text: extract_spy.append(text),
+    )
+
+    token = register_user(client)
+    conv = create_conversation(client, token)
+
+    with client.stream(
+        "POST",
+        "/api/assistant/chat",
+        headers=auth_headers(token),
+        json={"conversationId": conv["id"], "content": "帮我建一个图谱"},
+    ) as response:
+        body = b"".join(response.iter_bytes()).decode("utf-8")
+
+    assert extract_spy == []  # 未调提取
+    assert "请把你想要建模的内容直接发给我" in "".join(
+        _extract_sse_chunks(body)
+    )
+    assert '"type": "graph_draft"' not in body
+
+
+def test_chat_build_graph_guides_when_extraction_fails(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import app.services.assistant_service as service_module
+
+    monkeypatch.setattr(service_module, "classify_intent", lambda _q: "build_graph")
+    # 提取失败（素材不足）→ 回退引导语
+    monkeypatch.setattr(service_module, "extract_graph_draft", lambda _text: None)
+
+    token = register_user(client)
+    conv = create_conversation(client, token)
+
+    with client.stream(
+        "POST",
+        "/api/assistant/chat",
+        headers=auth_headers(token),
+        json={"conversationId": conv["id"], "content": BUILD_GRAPH_MATERIAL},
+    ) as response:
+        body = b"".join(response.iter_bytes()).decode("utf-8")
+
+    assert "请把你想要建模的内容直接发给我" in "".join(
+        _extract_sse_chunks(body)
+    )
+    assert '"type": "graph_draft"' not in body

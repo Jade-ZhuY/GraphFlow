@@ -4,6 +4,7 @@ import type {
   AssistantSession,
   BackendMessage,
   Conversation,
+  GraphDraft,
 } from '@/types/assistant';
 import * as assistantApi from '@/services/assistantApi';
 import { getApiErrorMessage } from '@/services/http';
@@ -38,6 +39,8 @@ interface AssistantState {
   isGenerating: boolean;
   isLoading: boolean;
   error: string | null;
+  /** build_graph 意图产出的图谱草稿；非空时前端弹窗预览。 */
+  graphDraft: GraphDraft | null;
 
   fetchConversations: () => Promise<void>;
   createConversation: () => Promise<string>;
@@ -51,6 +54,7 @@ interface AssistantState {
     chunk: string
   ) => void;
   finalizeAssistantMessage: (sessionId: string, messageId: string) => void;
+  setGraphDraft: (draft: GraphDraft | null) => void;
 }
 
 function conversationToSession(
@@ -72,6 +76,7 @@ export const useAssistantStore = create<AssistantState>((set, get) => ({
   isGenerating: false,
   isLoading: false,
   error: null,
+  graphDraft: null,
 
   fetchConversations: async () => {
     set({ isLoading: true, error: null });
@@ -160,6 +165,7 @@ export const useAssistantStore = create<AssistantState>((set, get) => ({
       isGenerating: false,
       isLoading: false,
       error: null,
+      graphDraft: null,
     }),
 
   sendUserMessage: async (content) => {
@@ -216,6 +222,7 @@ export const useAssistantStore = create<AssistantState>((set, get) => ({
           get().appendAssistantChunk(conversationId, assistantMessageId, chunk),
         onDone: () =>
           get().finalizeAssistantMessage(conversationId, assistantMessageId),
+        onGraphDraft: (draft) => get().setGraphDraft(draft),
         onError: (message) => {
           // 已产生的部分保留并追加中断标记；若完全没生成则整条显示错误
           set((state) => ({
@@ -291,4 +298,6 @@ export const useAssistantStore = create<AssistantState>((set, get) => ({
           : session
       ),
     })),
+
+  setGraphDraft: (draft) => set({ graphDraft: draft }),
 }));

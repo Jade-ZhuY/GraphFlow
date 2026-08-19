@@ -44,6 +44,14 @@ class Settings(BaseSettings):
     # 对话上下文兜底裁剪条数（模型 context=256k，日常用不到，防极端超长）
     llm_history_max_messages: int = 100
 
+    # 语义路由（意图识别）embedding 配置——硅基流动，与对话 LLM 独立
+    embedding_base_url: str | None = None
+    embedding_api_key: str | None = None
+    embedding_model: str = "BAAI/bge-m3"
+    # 语义路由命中阈值（cosine 相似度）。semantic-router 默认 0.3 过低，
+    # 会把「你好」等无关中文短句误分类为固定意图；真意图句得分通常在 0.68+。
+    embedding_score_threshold: float = 0.5
+
 
 @lru_cache
 def get_settings() -> Settings:

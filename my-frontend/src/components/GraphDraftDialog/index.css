@@ -1,0 +1,79 @@
+.graph-draft-summary {
+  padding: 10px 14px;
+  background: var(--color-bg-deep);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  font-size: 14px;
+  color: var(--color-text-primary);
+  margin-bottom: 16px;
+}
+
+.graph-draft-summary strong {
+  color: var(--color-accent-terracotta);
+}
+
+.graph-draft-section {
+  margin-bottom: 16px;
+}
+
+.graph-draft-section:last-child {
+  margin-bottom: 0;
+}
+
+.graph-draft-section-title {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.graph-draft-edge-list,
+.graph-draft-node-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.graph-draft-edge-item,
+.graph-draft-node-item {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--color-bg-deep);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+.edge-source,
+.edge-target {
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.edge-arrow {
+  color: var(--color-text-secondary);
+}
+
+.edge-label {
+  color: var(--color-accent-terracotta);
+  font-weight: 500;
+}
+
+.graph-draft-node-label {
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.graph-draft-node-type {
+  background: rgba(107, 143, 113, 0.1) !important;
+  border-color: rgba(107, 143, 113, 0.25) !important;
+  color: var(--color-accent-sage) !important;
+}

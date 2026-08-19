@@ -1,3 +1,5 @@
+import type { GraphEdge, GraphNode } from '@/types/graph';
+
 export type AssistantRole = 'user' | 'assistant' | 'system';
 
 export interface AssistantMessage {
@@ -31,4 +33,14 @@ export interface AssistantSession {
   messages: AssistantMessage[];
   createdAt: string;
   updatedAt: string;
+}
+
+/**
+ * 后端 build_graph 意图产出的图谱草稿（SSE graph_draft 事件）。
+ * 节点不含 x/y，由前端落库时布局；边引用的节点 id 已保证在 nodes 内。
+ */
+export interface GraphDraft {
+  title: string;
+  nodes: Omit<GraphNode, 'x' | 'y'>[];
+  edges: GraphEdge[];
 }

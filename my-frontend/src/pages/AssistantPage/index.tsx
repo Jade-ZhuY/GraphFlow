@@ -18,6 +18,7 @@ import {
   Zap,
 } from 'lucide-react';
 import UserMenu from '@/components/UserMenu';
+import GraphDraftDialog from '@/components/GraphDraftDialog';
 import { useAssistantStore } from '@/stores/useAssistantStore';
 import type { AssistantMessage, AssistantSession } from '@/types/assistant';
 import { SUGGESTED_PROMPTS } from '@/constants/assistantPrompts';
@@ -407,17 +408,25 @@ const AssistantPage: React.FC = () => {
     sessions,
     activeSessionId,
     isGenerating,
+    graphDraft,
     fetchConversations,
     createConversation,
     selectConversation,
     deleteConversation,
     sendUserMessage,
+    setGraphDraft,
   } = useAssistantStore();
   const [inputValue, setInputValue] = useState('');
   const [searchValue, setSearchValue] = useState('');
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [draftDialogOpen, setDraftDialogOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // 收到 build_graph 草稿后自动弹出预览
+  useEffect(() => {
+    if (graphDraft) setDraftDialogOpen(true);
+  }, [graphDraft]);
 
   const activeSession =
     sessions.find((session) => session.id === activeSessionId) ?? sessions[0];
@@ -565,6 +574,15 @@ const AssistantPage: React.FC = () => {
           aria-label="关闭历史会话"
         />
       )}
+
+      <GraphDraftDialog
+        open={draftDialogOpen}
+        draft={graphDraft}
+        onClose={() => {
+          setDraftDialogOpen(false);
+          setGraphDraft(null);
+        }}
+      />
     </div>
   );
 };
