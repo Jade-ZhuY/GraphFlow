@@ -20,7 +20,6 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 .mypy_cache/
-.router_cache/
 
 # ---- Logs ----
 logs/
