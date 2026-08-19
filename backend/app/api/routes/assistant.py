@@ -9,6 +9,7 @@ from app.api.deps import get_current_user
 from app.db.session import get_db
 from app.models.auth import UserModel
 from app.repositories.conversation_repository import ConversationRepository
+from app.repositories.project_repository import ProjectRepository
 from app.schemas.assistant import ChatRequest, Conversation, Message
 from app.schemas.common import ApiResponse
 from app.services.assistant_service import AssistantService
@@ -22,10 +23,17 @@ def _conversation_repository(
     return ConversationRepository(db)
 
 
+def _project_repository(
+    db: Annotated[Session, Depends(get_db)],
+) -> ProjectRepository:
+    return ProjectRepository(db)
+
+
 def _assistant_service(
     repository: Annotated[ConversationRepository, Depends(_conversation_repository)],
+    project_repository: Annotated[ProjectRepository, Depends(_project_repository)],
 ) -> AssistantService:
-    return AssistantService(repository)
+    return AssistantService(repository, project_repository)
 
 
 @router.get(

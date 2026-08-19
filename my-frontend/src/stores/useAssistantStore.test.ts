@@ -176,4 +176,42 @@ describe('useAssistantStore', () => {
 
     expect(mockedApi.chatStream).not.toHaveBeenCalled();
   });
+
+  it('sendUserMessage stores graphDraft when SSE emits graph_draft event', async () => {
+    const conv = makeConversation();
+    mockedApi.listConversations.mockResolvedValue([conv]);
+    await useAssistantStore.getState().fetchConversations();
+
+    const draft = {
+      title: '客户关系',
+      nodes: [{ id: 'n1', label: '张三', rdfType: '人物' }],
+      edges: [{ id: 'e1', source: 'n1', target: 'n1', label: '自环' }],
+    };
+
+    mockedApi.chatStream.mockImplementation(
+      async (_convId, _content, handlers) => {
+        handlers.onChunk('已为你解析出图谱草稿');
+        handlers.onGraphDraft?.(draft);
+        handlers.onDone();
+      }
+    );
+
+    await useAssistantStore.getState().sendUserMessage('素材');
+
+    const state = useAssistantStore.getState();
+    // 弹窗开合由页面 useEffect 处理，store 只负责暂存草稿
+    expect(state.graphDraft).toEqual(draft);
+  });
+
+  it('setGraphDraft toggles draft state (open/close)', () => {
+    useAssistantStore.getState().setGraphDraft({
+      title: 't',
+      nodes: [],
+      edges: [],
+    });
+    expect(useAssistantStore.getState().graphDraft).not.toBeNull();
+
+    useAssistantStore.getState().setGraphDraft(null);
+    expect(useAssistantStore.getState().graphDraft).toBeNull();
+  });
 });
