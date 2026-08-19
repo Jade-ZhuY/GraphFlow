@@ -16,6 +16,17 @@ from app.schemas.common import ApiResponse
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     init_db()
+    # 预热语义路由：提前构建 embedding 索引，把首次批量 embedding
+    # 的延迟从"用户第一条消息"挪到"后端启动时"，避免首请求等 9s。
+    import asyncio
+
+    from app.services.intent_router import _build_router
+
+    try:
+        await asyncio.to_thread(_build_router)
+    except Exception:
+        # embedding 未配置或不可用，运行时再兜底
+        pass
     yield
 
 

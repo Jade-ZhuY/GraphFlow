@@ -119,11 +119,10 @@ classify_intent(query)  ← embedding 相似度匹配（semantic-router）
 
 ## 待办 / 后续开发（未完成）
 
-1. **embedding 模型选型**：默认 `Qwen3-VL-Embedding-8B` 是 8B 多模态模型，文本语义路由偏重、延迟高，建议换 `BAAI/bge-m3`（中文友好、秒级）。
-2. **避免阻塞事件循环**：`classify_intent` 是同步调用（内部 HTTP），跑在 async 请求里可能卡住事件循环，建议 `asyncio.to_thread` 包一层（`build_graph` 分支已用 `to_thread`，`query_project`/`chat` 尚未）。
-3. **embedding 故障降级**：embedding 服务持续不可用时每次请求都会重试构建（lru_cache 不缓存异常），建议缓存"不可用"哨兵状态。
-4. **路由效果调优**：utterances 数量少，可后续补充样本；可评估各意图命中/误命中率。
-5. **build_graph 草稿增强**：草稿坐标目前由前端网格生成，可改后端力导向/语义布局；预览可扩展为画布可视化（需改造 GraphCanvas 支持外部数据）。
+1. **避免阻塞事件循环**：`classify_intent` 是同步调用（内部 HTTP），跑在 async 请求里可能卡住事件循环，建议 `asyncio.to_thread` 包一层（`build_graph` 分支已用 `to_thread`，`greeting`/`query_project` 路径尚未）。
+2. **路由效果调优**：utterances 数量少，可后续补充样本；可评估各意图命中/误命中率。
+3. **build_graph 草稿增强**：草稿坐标目前由前端网格生成，可改后端力导向/语义布局；预览可扩展为画布可视化（需改造 GraphCanvas 支持外部数据）。
+4. **修复「随便聊聊」误命中 greeting**：bge-m3 语义区分更强，把中性闲聊短句和打招呼拉近了，需微调阈值或 utterances。
 
 ---
 
