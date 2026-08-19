@@ -13,6 +13,7 @@
 - **双数据模型**：RDF（uri / predicate）与属性图（PG）统一支持，导入导出由前端指定格式
 - **认证与项目**：JWT + 会话双令牌认证，知识图谱项目的多用户管理与协作分享
 - **LLM 咨询助手**：基于 langchain + langgraph 的智能体，SSE 流式回答，配置走后端 `.env`
+- **语义路由意图识别**：前置 semantic-router 快速路由层，基于 embedding 相似度匹配，毫秒级分类固定意图走专项处理，模糊意图交由 LLM 智能体兜底；嵌入模型与 LLM 独立配置
 - **GraphRAG 问答**：对用户自己的图谱做关键词检索 + 邻居扩展，生成自然语言答案
 
 ## 项目结构
@@ -24,7 +25,7 @@
 
 ## 技术栈
 
-**后端**：FastAPI · SQLAlchemy 2 · MySQL（默认）· PyJWT · Argon2 · langchain + langgraph
+**后端**：FastAPI · SQLAlchemy 2 · MySQL（默认）· PyJWT · Argon2 · langchain + langgraph · semantic-router
 
 **前端**：React 19 · TypeScript · Vite · Ant Design 6 · Tailwind CSS 4 · D3 · Zustand
 
