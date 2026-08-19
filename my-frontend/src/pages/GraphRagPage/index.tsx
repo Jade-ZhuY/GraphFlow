@@ -22,7 +22,7 @@ import {
 import UserMenu from '@/components/UserMenu';
 import { useProjectStore } from '@/stores/useProjectStore';
 import { getApiErrorMessage } from '@/services/http';
-import { searchGraph } from '@/utils/graphRagEngine';
+import { queryGraph } from '@/services/graphragApi';
 import type { GraphProject } from '@/types/graph';
 import type { RagSearchResult } from '@/types/graphRag';
 import './index.css';
@@ -195,6 +195,7 @@ const GraphRagPage: React.FC = () => {
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<RagSearchResult | null>(null);
+  const [streamingAnswer, setStreamingAnswer] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -217,12 +218,22 @@ const GraphRagPage: React.FC = () => {
 
   const handleSearch = async () => {
     const trimmed = query.trim();
-    if (!trimmed || !selectedProject) return;
+    if (!trimmed || !activeProjectId) return;
     setLoading(true);
+    setStreamingAnswer('');
+    setResult(null);
     try {
-      const res = searchGraph(selectedProject, { query: trimmed });
-      setResult(res);
-    } finally {
+      await queryGraph(activeProjectId, trimmed, {
+        onChunk: (chunk) =>
+          setStreamingAnswer((prev) => prev + chunk),
+        onSubgraph: (data) => setResult(data),
+        onDone: () => setLoading(false),
+        onError: (msg) => {
+          message.error(msg);
+          setLoading(false);
+        },
+      });
+    } catch {
       setLoading(false);
     }
   };
@@ -236,6 +247,7 @@ const GraphRagPage: React.FC = () => {
 
   const handleClear = () => {
     setResult(null);
+    setStreamingAnswer('');
     setQuery('');
     textareaRef.current?.focus();
   };
@@ -400,7 +412,7 @@ const GraphRagPage: React.FC = () => {
                         children: (
                           <div className="tab-answer">
                             <div className="answer-content">
-                              {formatMarkdown(result.answer)}
+                              {formatMarkdown(streamingAnswer || result.answer)}
                             </div>
                           </div>
                         ),

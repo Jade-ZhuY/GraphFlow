@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.errors import register_exception_handlers
 from app.api.routes.assistant import router as assistant_router
 from app.api.routes.auth import router as auth_router
+from app.api.routes.graphrag import router as graphrag_router
 from app.api.routes.projects import router as projects_router
 from app.core.config import settings
 from app.db.session import init_db
@@ -50,6 +51,7 @@ register_exception_handlers(app)
 app.include_router(auth_router, prefix="/api/auth", tags=["auth"])
 app.include_router(projects_router, prefix="/api/projects", tags=["projects"])
 app.include_router(assistant_router, prefix="/api/assistant", tags=["assistant"])
+app.include_router(graphrag_router, prefix="/api/graphrag", tags=["graphrag"])
 
 
 @app.get("/api/health", response_model=ApiResponse[dict[str, str]], tags=["system"])
