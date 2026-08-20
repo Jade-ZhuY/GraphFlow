@@ -412,7 +412,7 @@ const GraphRagPage: React.FC = () => {
                         children: (
                           <div className="tab-answer">
                             <div className="answer-content">
-                              {formatMarkdown(streamingAnswer || result.answer)}
+                              {formatMarkdown(streamingAnswer || result?.answer || '')}
                             </div>
                           </div>
                         ),
