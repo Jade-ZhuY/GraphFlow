@@ -62,7 +62,7 @@ async def query_graph(
     )
 
     keywords = extract_keywords(payload.query)
-    subgraph = build_subgraph(project, keywords, payload.top_k, payload.hop_depth)
+    subgraph = build_subgraph(project, keywords, payload.query, payload.top_k, payload.hop_depth)
     event_stream = stream_answer(project.name, subgraph, payload.query)
 
     return StreamingResponse(

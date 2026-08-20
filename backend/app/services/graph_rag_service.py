@@ -8,8 +8,11 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import re
 from typing import Any
+
+import numpy as np
 
 from app.models.graph import GraphEdgeModel, GraphNodeModel, ProjectModel
 
@@ -92,6 +95,61 @@ def match_nodes(
     return [node for node, _ in scored[:top_k]]
 
 
+# ---- 语义匹配（embedding）----
+
+
+def _get_embedding(texts: list[str]) -> list[list[float]]:
+    """调 bge-m3 批量 embedding，返回向量列表。"""
+    import litellm
+
+    from app.core.config import settings
+
+    os.environ.setdefault("HOSTED_VLLM_API_BASE", settings.embedding_base_url or "")
+    os.environ.setdefault("HOSTED_VLLM_API_KEY", settings.embedding_api_key or "")
+
+    model = f"hosted_vllm/{settings.embedding_model}"
+    response = litellm.embedding(model=model, input=texts)
+    return [d["embedding"] for d in response.data]  # type: ignore[index]
+
+
+def match_nodes_semantic(
+    nodes: list[GraphNodeModel],
+    query: str,
+    top_k: int = _DEFAULT_TOP_K,
+) -> list[GraphNodeModel]:
+    """语义匹配节点：embedding + 余弦相似度，返回 topK。"""
+    if not nodes:
+        return []
+
+    from app.core.config import settings
+
+    if not settings.embedding_api_key or not settings.embedding_base_url:
+        return []
+
+    try:
+        labels = [node.label for node in nodes]
+        all_texts = [query] + labels
+        all_vecs = _get_embedding(all_texts)
+        query_vec = np.array(all_vecs[0])
+        label_vecs = np.array(all_vecs[1:])
+
+        # 余弦相似度
+        query_norm = query_vec / (np.linalg.norm(query_vec) + 1e-8)
+        label_norms = label_vecs / (np.linalg.norm(label_vecs, axis=1, keepdims=True) + 1e-8)
+        similarities = np.dot(label_norms, query_norm)
+
+        # 取 topK 且相似度 > 0.5
+        scored: list[tuple[GraphNodeModel, float]] = []
+        for i, sim in enumerate(similarities):
+            if sim > 0.5:
+                scored.append((nodes[i], float(sim)))
+        scored.sort(key=lambda item: item[1], reverse=True)
+        return [node for node, _ in scored[:top_k]]
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("语义匹配失败，退回纯关键词: %s", exc)
+        return []
+
+
 def expand_neighbors(
     seed_ids: set[str],
     edges: list[GraphEdgeModel],
@@ -121,11 +179,24 @@ def expand_neighbors(
 def build_subgraph(
     project: ProjectModel,
     keywords: list[str],
+    query: str,
     top_k: int = _DEFAULT_TOP_K,
     hop_depth: int = _DEFAULT_HOP_DEPTH,
 ) -> dict[str, Any]:
-    """串联关键词匹配 + 邻居扩展，返回子图。"""
-    matched_nodes = match_nodes(project.nodes, keywords, top_k)
+    """串联关键词匹配 + 语义匹配 + 邻居扩展，返回子图。"""
+    # 关键词匹配
+    keyword_nodes = match_nodes(project.nodes, keywords, top_k)
+    # 语义匹配（embedding 补盲区）
+    semantic_nodes = match_nodes_semantic(project.nodes, query, top_k)
+    # 合并去重（先关键词后语义，保持关键词排前面）
+    seen_ids: set[str] = set()
+    merged: list[GraphNodeModel] = []
+    for node in keyword_nodes + semantic_nodes:
+        if node.id not in seen_ids:
+            seen_ids.add(node.id)
+            merged.append(node)
+    matched_nodes = merged[:top_k]
+
     seed_ids = {node.id for node in matched_nodes}
 
     reached_ids, included_edges = expand_neighbors(
@@ -277,7 +348,7 @@ def query_all_projects(
     project_results: list[dict[str, Any]] = []
 
     for project in projects:
-        subgraph = build_subgraph(project, keywords, top_k, hop_depth)
+        subgraph = build_subgraph(project, keywords, query, top_k, hop_depth)
         match_count = (
             len(subgraph["matchedNodes"]) + len(subgraph["matchedEdges"])
         )

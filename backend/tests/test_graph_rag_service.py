@@ -151,7 +151,7 @@ def test_build_subgraph_integration():
         ],
     )
 
-    subgraph = build_subgraph(project, ["张三"], top_k=3, hop_depth=1)
+    subgraph = build_subgraph(project, ["张三"], "张三", top_k=3, hop_depth=1)
 
     assert len(subgraph["matchedNodes"]) == 1
     assert subgraph["matchedNodes"][0]["label"] == "张三"
