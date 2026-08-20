@@ -22,7 +22,7 @@ import {
 import UserMenu from '@/components/UserMenu';
 import { useProjectStore } from '@/stores/useProjectStore';
 import { getApiErrorMessage } from '@/services/http';
-import { queryGraph } from '@/services/graphragApi';
+import { queryGraph, queryAllGraph } from '@/services/graphragApi';
 import type { GraphProject } from '@/types/graph';
 import type { RagSearchResult } from '@/types/graphRag';
 import './index.css';
@@ -223,16 +223,21 @@ const GraphRagPage: React.FC = () => {
     setStreamingAnswer('');
     setResult(null);
     try {
-      await queryGraph(activeProjectId, trimmed, {
-        onChunk: (chunk) =>
+      const handlers = {
+        onChunk: (chunk: string) =>
           setStreamingAnswer((prev) => prev + chunk),
-        onSubgraph: (data) => setResult(data),
+        onSubgraph: (data: RagSearchResult) => setResult(data),
         onDone: () => setLoading(false),
-        onError: (msg) => {
+        onError: (msg: string) => {
           message.error(msg);
           setLoading(false);
         },
-      });
+      };
+      if (activeProjectId === 'all') {
+        await queryAllGraph(trimmed, handlers);
+      } else {
+        await queryGraph(activeProjectId, trimmed, handlers);
+      }
     } catch {
       setLoading(false);
     }
@@ -258,11 +263,13 @@ const GraphRagPage: React.FC = () => {
   };
 
   const projectOptions = useMemo(
-    () =>
-      projects.map((p) => ({
+    () => [
+      { value: 'all', label: `全部项目（${projects.length} 个）` },
+      ...projects.map((p) => ({
         value: p.id,
         label: `${p.name}（${p.nodes.length} 节点 / ${p.edges.length} 边）`,
       })),
+    ],
     [projects]
   );
 

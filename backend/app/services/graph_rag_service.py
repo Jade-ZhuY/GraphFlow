@@ -259,3 +259,149 @@ def _edges_to_schema(edges: list[GraphEdgeModel]) -> list[dict[str, Any]]:
         }
         for edge in edges
     ]
+
+
+# ---- 多项目检索 ----
+
+_MULTI_PROJECT_TOP_N = 3
+
+
+def query_all_projects(
+    projects: list[ProjectModel],
+    query: str,
+    top_k: int = _DEFAULT_TOP_K,
+    hop_depth: int = _DEFAULT_HOP_DEPTH,
+) -> dict[str, Any]:
+    """遍历所有项目，分别检索，按匹配度排序取 topN。"""
+    keywords = extract_keywords(query)
+    project_results: list[dict[str, Any]] = []
+
+    for project in projects:
+        subgraph = build_subgraph(project, keywords, top_k, hop_depth)
+        match_count = (
+            len(subgraph["matchedNodes"]) + len(subgraph["matchedEdges"])
+        )
+        if match_count > 0:
+            project_results.append({
+                "projectId": project.id,
+                "projectName": project.name,
+                "matchCount": match_count,
+                "subgraph": subgraph,
+            })
+
+    project_results.sort(key=lambda r: r["matchCount"], reverse=True)
+    top_results = project_results[:_MULTI_PROJECT_TOP_N]
+
+    # 合并子图：跨项目汇总节点和边
+    all_nodes: list[dict[str, Any]] = []
+    all_edges: list[dict[str, Any]] = []
+    for r in top_results:
+        for node in r["subgraph"]["subgraph"]["nodes"]:
+            node["_projectName"] = r["projectName"]
+        all_nodes.extend(r["subgraph"]["subgraph"]["nodes"])
+        all_edges.extend(r["subgraph"]["subgraph"]["edges"])
+
+    return {
+        "results": top_results,
+        "totalProjects": len(project_results),
+        "combinedSubgraph": {
+            "nodes": all_nodes,
+            "edges": all_edges,
+        },
+        "keywords": keywords,
+    }
+
+
+def _build_multi_llm_prompt(data: dict[str, Any], query: str) -> str:
+    """多项目汇总 prompt。"""
+    parts = []
+    results = data.get("results", [])
+    total = data.get("totalProjects", len(results))
+
+    if not results:
+        parts.append(f"在 {total} 个项目中未找到匹配内容。")
+    else:
+        parts.append(
+            f"在 {total} 个项目中检索到 {len(results)} 个有匹配的项目："
+        )
+        for r in results:
+            sg = r["subgraph"]
+            parts.append(
+                f"\n【{r['projectName']}】匹配 {r['matchCount']} 项，"
+                f"子图共 {len(sg['subgraph']['nodes'])} 个实体、"
+                f"{len(sg['subgraph']['edges'])} 条关系"
+            )
+            nodes = sg["subgraph"]["nodes"]
+            edges = sg["subgraph"]["edges"]
+            if nodes:
+                node_lines = [
+                    f"  - {n['label']}"
+                    + (f"（{n.get('rdfType','')}）" if n.get("rdfType") else "")
+                    for n in nodes[:10]
+                ]
+                parts.append("\n".join(node_lines))
+            if edges:
+                edge_lines = []
+                for e in edges[:10]:
+                    src = next(
+                        (n["label"] for n in nodes if n["id"] == e["source"]),
+                        e["source"],
+                    )
+                    tgt = next(
+                        (n["label"] for n in nodes if n["id"] == e["target"]),
+                        e["target"],
+                    )
+                    edge_lines.append(f"  {src} —{e['label']}→ {tgt}")
+                parts.append("\n".join(edge_lines))
+
+    parts.append(f"\n用户问题：{query}")
+    parts.append(
+        "\n请综合所有项目的信息回答。如果某个项目没有相关信息，"
+        "不要编造。可以按项目分别说明。"
+    )
+    return "\n".join(parts)
+
+
+async def stream_multi_answer(
+    data: dict[str, Any],
+    query: str,
+) -> Any:
+    """多项目 SSE 流式生成器。"""
+    from langchain_core.messages import HumanMessage, SystemMessage
+    from langchain_openai import ChatOpenAI
+
+    from app.core.config import settings
+
+    subgraph_payload = json.dumps(
+        {"type": "subgraph", "data": data},
+        ensure_ascii=False,
+    )
+    yield f"data: {subgraph_payload}\n\n"
+
+    prompt = _build_multi_llm_prompt(data, query)
+    llm = ChatOpenAI(
+        base_url=settings.llm_base_url,
+        api_key=settings.llm_api_key,
+        model=settings.llm_model,
+        streaming=True,
+    )
+    try:
+        async for chunk in llm.astream(
+            [SystemMessage(content=SYSTEM_PROMPT), HumanMessage(content=prompt)]
+        ):
+            text = chunk.content
+            if text:
+                payload = json.dumps(
+                    {"type": "chunk", "content": text},
+                    ensure_ascii=False,
+                )
+                yield f"data: {payload}\n\n"
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("GraphRAG 多项目 LLM 生成失败: %s", exc)
+        payload = json.dumps(
+            {"type": "error", "message": str(exc)},
+            ensure_ascii=False,
+        )
+        yield f"data: {payload}\n\n"
+
+    yield "data: [DONE]\n\n"
